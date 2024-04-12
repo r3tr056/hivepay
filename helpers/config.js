@@ -1,8 +1,16 @@
 
+export const USERS_COLLECTION = 'users';
+export const TRANSACTIONS_COLLECTION = 'transactions';
+
 export const hiveEngine = {
     CHAIN_ID: 'ssc-mainnet-hive',
 };
 
+export const CLIENT_OPTIONS = {
+    timeout: 3000,
+    failOverThreshold: 15,
+    consoleOnFailover: true,
+}
 
 export const rpcList = [
     DEFAULT_RPC,

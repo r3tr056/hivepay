@@ -1,16 +1,12 @@
 
 const Wallet = require("../assets/images/wallet.png");
-const Bitcoin = require("../assets/images/bitcoin.png");
-const Ethereum = require("../assets/images/ethereum.png");
-const Binance = require("../assets/images/binance.png");
-const Polygon = require("../assets/images/polygon.png");
+const Hbd = require("../assets/images/hbd.png");
+const Hive = require("../assets/images/hive.png");
 
 export const IMAGES = {
     Wallet,
-    Bitcoin,
-    Ethereum,
-    Binance,
-    Polygon,
+    Hbd,
+    Hive
 };
 
 const elevationNone = {
@@ -75,9 +71,3 @@ export const FONTS = {
 export const Opacity = {
     opacity2: "rgba(0,0,0, 0.2)",
 };
-
-export const WALLET_TOP_TABS = [
-    { title: "Send", id: 1, route: "Send" },
-    { title: "Receive", id: 2, route: "Receive" },
-    { title: "Trade", id: 3, route: "Trade" },
-];

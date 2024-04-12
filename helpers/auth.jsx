@@ -4,9 +4,10 @@ import firestore from '@react-native-firebase/firestore';
 import { getRandomValues } from '@react-native-module/get-random-values';
 import * as bs58 from 'bs58';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getFromKeychain, saveOnKeychain } from '../services/keychain';
 import { decryptToJSON, encryptJSON } from './crypto';
 import client, { getClient } from './hiveClient';
+import { getAccountBalance, getTransactions } from './hive_wallet';
+import { getFromKeychain, saveOnKeychain } from './keychain';
 
 const AuthContext = createContext();
 
@@ -15,16 +16,22 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [qrData, setQRData] = useState(null);
 
+    const [phonenumber, setPhonenumber] = useState();
+
     useEffect(() => {
 
         const initAuth = async () => {
             try {
+                let userData = {}
                 // Get user authentication info from the keychain
                 const encUserdata = await getFromKeychain('account');
-                const userData = decryptToJSON(encUserdata);
-                if (userData && userData.user_id && userData.keys) {
-                    const fetchedData = fetchUserData(userData.user_id);
-                    setUser({ uid: userId, ...userData });
+                if (encUserdata) {
+                    userData = decryptToJSON(encUserdata);
+                    // if the `uid`, `keys` are present
+                    if (userData && userData.userId && userData.keys) {
+                        const fetchedData = fetchUserData(userData.userId);
+                        setUser({ uid: userId, ...fetchedData });
+                    }
                 } else {
                     const usersRef = firestore().collection('users');
                     const unsub = auth().onAuthStateChanged(async (user) => {
@@ -33,10 +40,9 @@ export const AuthProvider = ({ children }) => {
                                 .get()
                                 .then((document) => {
                                     const userData = document.data();
-                                    setLoading(false);
                                     setUser(userData);
                                 }).catch((error) => {
-                                    setLoading(false);
+                                    console.error(error);
                                 });
                         } else {
                             setLoading(false);
@@ -54,27 +60,8 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
 
-    const saveUserData = (user_id, {
-        displayName,
-        username,
-        privKey,
-        phonenumber,
-        balance = 0,
-        notifications = [],
-        transaction_history = []
-    }) => {
-        const data = {
-            username: username,
-            privateKey: privKey,
-            name: displayName,
-            phonenumber: phonenumber,
-            balance: balance,
-            notifications: notifications,
-            transactions: transaction_history,
-            photoURL: null,
-            resource_credits: 0,
-        }
-        firestore().collection('users').doc(user_id).set(data).then((result) => {
+    const saveUserData = (userId, data) => {
+        firestore().collection('users').doc(userId).set(data).then((result) => {
             console.log(`User data saved successfully`);
         }).catch((err) => {
             console.error(`Failed to save user data : `, error);
@@ -101,11 +88,11 @@ export const AuthProvider = ({ children }) => {
     }
 
     // NOTE : Export to the context children
-    const fetchUserData = async (user_id) => {
+    const fetchUserData = async (userId) => {
         try {
-            const user_data = await firestore().collection('users').doc(user_id).get();
-            if (user_data.exists) {
-                return user_data.data();
+            const userData = await firestore().collection('users').doc(userId).get();
+            if (userData.exists) {
+                return userData.data();
             } else {
                 return null;
             }
@@ -115,41 +102,60 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
+    const signInUser = async (userId) => {
+        const existingUserData = await fetchUserData(userId);
+        const { username, keys } = existingUserData;
+        if (!existingUserData) {
+            throw Error('User not found');
+        }
+        await saveUserDataOnKeychain({ userId, username, keys });
+        setUser({ uid: userId, ...existingUserData });
+    }
+
     // NOTE : Export to the context children
-    const confirmSignIn = async (confirmResult, otp, username, keys) => {
+    const confirmOtp = async (confirmResult, otp) => {
         try {
             const userCred = await confirmResult.confirm(otp);
+            // OTP is confirm, proceed to login
             const userId = userCred.user.uid;
-            const existingUserData = await fetchUserData(userId);
-            // new account detected
-            if (!existingUserData) {
-                const user_data = createUserData(username, keys, user_id);
-                await saveUserData(userId, user_data);
-            }
-            // save the key on the keychain - secure, biometric security
-            await saveUserDataOnKeychain({ userId, username, keys });
-            const userData = await fetchUserData(userId);
-            // update the user state
-            setUser({ uid: userId, ...userData });
-            return userCred.user;
+            signInUser(userId);
+            return true
         } catch (error) {
             console.error('Error confirming phone number:', error);
             throw error;
         }
     };
 
-    const saveUserDataOnKeychain = async ({ user_id, username, keys }) => {
-        const account = { user_id, username, keys };
+    const saveUserDataOnKeychain = async ({ userId, username, keys }) => {
+        const account = { userId, username, keys };
         const encryptedAccount = encryptJSON(account);
         //NOTE: save the account on the keychain
         await saveOnKeychain('account', encryptedAccount);
     }
 
-    const createUserData = async (username, user_id) => {
-        const data = {
-            username: username,
-            // TODO : create a new user object, save the data to firebase
+    const getUserData = async (is_new, username, userId, keys, phonenumber, transactions = [], notifications = [], photoURL = null, rc = 0) => {
+        if (!is_new) {
+            balance = getAccountBalance({ username });
+            transactions = getTransactions({ username });
+            const welcomeNotify = {
+                'message': 'Welcome to Hive Pay',
+            }
+            notifications = [welcomeNotify];
         }
+
+        const data = {
+            uid: userId,
+            username: username,
+            keys: keys,
+            name: username,
+            phonenumber: phonenumber,
+            balance: balance,
+            notifications: notifications,
+            transactions: transactions,
+            photoURL: photoURL,
+            resource_credits: 0,
+        }
+        return data;
     }
 
     async function validateNewAccount(username, password) {
@@ -210,6 +216,7 @@ export const AuthProvider = ({ children }) => {
 
                 if (valid) {
                     setQRData({ username, keys });
+
                     console.log('QR Data successfully set');
                 } else {
                     throw new Error('Error, Invalid Keys');
@@ -312,6 +319,7 @@ export const AuthProvider = ({ children }) => {
                         function (result) {
                             if (result && result.id) {
                                 console.log('RC delegated');
+                                const userData = createUserData()
                                 firestore().collection('users').doc(userid).set({
                                     username: username,
                                     is_premium: is_premium,
@@ -337,7 +345,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, signInWithPhoneNumber, confirmSignIn, signOut, resendOtp, qrData, singinQRCode }}>
+        <AuthContext.Provider value={{ user, loading, signInWithPhoneNumber, confirmOtp, signOut, resendOtp, qrData, singinQRCode, createClaimedAccount }}>
             {children}
         </AuthContext.Provider>
     )

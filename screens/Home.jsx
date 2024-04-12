@@ -2,8 +2,14 @@ import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SIZES, WALLET_TOP_TABS } from '../constants/Assets';
+import { SIZES } from '../constants/Assets';
 import Layout from "../constants/Layout";
+
+const WALLET_TOP_TABS = [
+    { title: "Send", id: 1, route: "Send" },
+    { title: "Request", id: 2, route: "Request" },
+    { title: "Scan", id: 3, route: "Scan" },
+]
 
 const ROUTES = [
     { key: "tokens", title: "Tokens" },

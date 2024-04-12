@@ -20,14 +20,13 @@ export const COLOR_SCHEME = {
 };
 
 export default {
-    customGreen: "#c5f277",
-    primary: "#1d3557",
+    primary: "#E31337",
     secondary: "#7DFFF3",
     tertiary: "#9E80FF",
     white: "#fff",
-    black50: "rgba(0,0,0,0.5)",
+    black50: "#141718",
     green: "green",
-    red: "#e63946",
+    red: "#E31337",
     gray: "#f6f6f6",
     gray10: "#DADADA",
 };

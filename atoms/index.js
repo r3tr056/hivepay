@@ -8,5 +8,5 @@ export const TradingTabState = atom({
 
 export const CurrentTokenState = atom({
     key: "currentTokenState",
-    default: TOKENS.Bitcoin,
+    default: TOKENS.HBD,
 });

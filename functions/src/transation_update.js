@@ -20,12 +20,15 @@ main.use('/api/', app);
 
 app.post('/get-balance', async (req, res) => {
     try {
-        const { username } = req.body;
+        const { username, uid } = req.body;
         const account = await client.database.getAccounts([username]);
         const hiveBalance = parseFloat(account[0].balance.split(' ')[0]);
         const hbdBalance = parseFloat(account[0].hbd_balance.split(' ')[0]);
-        const newDoc = await db.
-            console.log('Account Balance : ', hiveBalance, 'HIVE');
+        const newDoc = await db.collection('users').doc(uid).set({
+            hiveBalance: 0,
+            hbdBalance: 0,
+        });
+        console.log('Account Balance : ', hiveBalance, 'HIVE');
         console.log('Account Balance : ', hbdBalance, 'HBD');
         return { hiveBalance, hbdBalance };
     } catch (error) {
@@ -33,3 +36,6 @@ app.post('/get-balance', async (req, res) => {
         throw error;
     }
 });
+
+
+app.post()

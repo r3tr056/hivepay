@@ -1,17 +1,12 @@
 import { Client } from '@hiveio/dhive';
 import * as hiveuri from 'hive-uri';
-
-const CLIENT_OPTIONS = {
-    timeout: 3000,
-    failOverThreshold: 15,
-    consoleOnFailover: true,
-}
+import { CLIENT_OPTIONS } from './config';
 
 const EXPIRE_TIME = 1000 * 60;
 
 export const DEFAULT_CHAIN_ID = 'beeab0de00000000000000000000000000000000000000000000000000000000';
-let testnet = false;
 
+// Set up RPC configuration for the Hive client.
 export const setRpc = async (rpcObj) => {
     let rpc = typeof rpcObj === 'string' ? rpcObj : rpcObj.uri;
     testnet = typeof rpcObj === 'string' ? false : rpcObj.testnet || false;
@@ -37,6 +32,7 @@ const DEFAULT_TESTNET = [
 export const TESTNET_CHAIN_ID = '18dcf0a285365fc58b71f18b3d3fec954aa0c141c44e4e5cb4cf777b9eab274e';
 
 const client = new Client(DEFAULT_TESTNET, CLIENT_OPTIONS);
+
 
 const handler = {
     get(target, prop) {
