@@ -1,5 +1,5 @@
 import { DrawerContentScrollView, DrawerItem, DrawerItemList, createDrawerNavigator } from '@react-navigation/drawer';
-import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
 import { Linking } from "react-native";
@@ -11,7 +11,6 @@ import SecurityScreen from '../screens/SecurityScreen';
 import Send from "../screens/Send";
 import SignUp from '../screens/SignUp';
 import Trade from "../screens/Trade";
-import LinkingConfig from './LinkingConfig';
 
 const Drawer = createDrawerNavigator();
 
@@ -30,7 +29,7 @@ const CustomDrawerContent = (props) => {
     )
 }
 
-export default function DrawerNavigation() {
+export function DrawerNavigation() {
     return (
         <Drawer.Navigator initialRouteName='Home' drawerContent={props => <CustomDrawerContent {...props} />}>
             {/* Account, Security & Privary,TODO : Support, Resources */}
@@ -47,9 +46,7 @@ export default function DrawerNavigation() {
 export default function Navigation({ colorScheme }) {
 
     return (
-        <NavigationContainer
-            linking={LinkingConfig}
-            theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <NavigationContainer>
             <RootNavigator />
         </NavigationContainer>
     );

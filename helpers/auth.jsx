@@ -6,7 +6,7 @@ import * as bs58 from 'bs58';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { decryptToJSON, encryptJSON } from './crypto';
 import client, { getClient } from './hiveClient';
-import { getAccountBalance, getTransactions } from './hive_wallet';
+import { getAccountBalanceFromHive, getTransactionsFromHive } from './hive_wallet';
 import { getFromKeychain, saveOnKeychain } from './keychain';
 
 const AuthContext = createContext();
@@ -135,8 +135,8 @@ export const AuthProvider = ({ children }) => {
 
     const getUserData = async (is_new, username, userId, keys, phonenumber, transactions = [], notifications = [], photoURL = null, rc = 0) => {
         if (!is_new) {
-            balance = getAccountBalance({ username });
-            transactions = getTransactions({ username });
+            balance = getAccountBalanceFromHive({ username });
+            transactions = getTransactionsFromHive({ username });
             const welcomeNotify = {
                 'message': 'Welcome to Hive Pay',
             }
@@ -150,8 +150,6 @@ export const AuthProvider = ({ children }) => {
             name: username,
             phonenumber: phonenumber,
             balance: balance,
-            notifications: notifications,
-            transactions: transactions,
             photoURL: photoURL,
             resource_credits: 0,
         }
@@ -319,14 +317,6 @@ export const AuthProvider = ({ children }) => {
                         function (result) {
                             if (result && result.id) {
                                 console.log('RC delegated');
-                                const userData = createUserData()
-                                firestore().collection('users').doc(userid).set({
-                                    username: username,
-                                    is_premium: is_premium,
-                                    balance: 0,
-                                    resource_credits: 15000000000,
-                                    createdAt: firestore.FieldValue.serverTimestamp(),
-                                });
                                 return { success: true, message: `Account @${username} created successfully.` };
                             } else {
                                 console.log(JSON.stringify(result));

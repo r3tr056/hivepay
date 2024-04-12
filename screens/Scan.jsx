@@ -180,7 +180,7 @@ export function Scan() {
             </View>
         )
     } else {
-        const qrData = generateReceiveQRCode(user.username, null, memo);
+        const qrData = generateReceiveQRCode(user.username, null, `${user.username} - Transaction`);
         return (
             <View>
                 <View style={{

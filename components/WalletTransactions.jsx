@@ -4,6 +4,7 @@ import Vector from "../assets/vectors";
 import { SHADOWS, SIZES } from "../constants/Assets";
 import Colors from "../constants/Colors";
 import { TOKENS, TRANSACTIONS } from "../constants/Dummies";
+import { useAuth } from "../helpers/auth";
 
 const TransactionIcon = ({ type, token, destination }) => {
     if ("swap" === type && token && destination) {
@@ -102,7 +103,10 @@ const TransactionCard = ({ item }) => {
 }
 
 const WalletTransactions = () => {
+    const { user: { transactions } } = useAuth();
     return (
         <FlatList data={TRANSACTIONS} renderItem={TransactionCard} showsVerticalScrollIndicator={false} keyExtractor={({ id }) => `${id}`} contentContainerStyle={{ paddingBottom: SIZES.p50 }} />
     );
 }
+
+export default WalletTransactions;

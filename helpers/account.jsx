@@ -1,7 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import database from '@react-native-firebase/database';
 import firestore from '@react-native-firebase/firestore';
+
 import axios from "axios";
-import { createContext, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
+import { v4 } from 'uuid';
 import { useAuth } from './auth';
 import { USERS_COLLECTION } from './config';
 
@@ -10,15 +13,40 @@ export const AccountContext = createContext();
 const AccountContext = ({ children }) => {
     const [balance, setBalance] = useState();
     const [transactions, setTransactions] = useState([]);
+    const [notifications, setNotifications] = useState([]);
     const [listData, setListData] = useState([]);
+    const [settings, setSettings] = useState({});
+
+    const { user: { username, userId } } = useAuth();
 
     useEffect(() => {
-        const { user } = useAuth();
+        const transactionsRef = database().ref('transactions');
+        const handleNewTransaction = (shapshot) => {
+            const newTx = { incomming: true, ...snapshot.val() };
+            setTransactions(prevTransactions => [...prevTransactions, newTx]);
+        }
 
-    })
+        transactionsRef.orderByChild('to').equalTo(username).on('child_added', handleNewTransaction);
 
+        return () => {
+            transactionsRef.off('child_added', handleNewTransaction);
+        }
+    }, [username]);
 
-    const { user: { uid } } = useAuth();
+    useEffect(() => {
+        const notificationsRef = database().ref('notifications');
+        const handleNewNotifications = (snapshot) => {
+            const newNotif = snapshot.val();
+            setNotifications(prevNotifications => [...prevNotifications, newNotif]);
+        }
+
+        notificationsRef.orderByChild('to').equalTo(username).on('child_added', handleNewNotifications);
+
+        return () => {
+            notificationsRef.off('child_added', handleNewNotifications);
+        }
+    }, [username]);
+
 
     // Function to save user settings under the user document
     const saveUserSettings = async (userUid, settingsData) => {
@@ -69,6 +97,23 @@ const AccountContext = ({ children }) => {
 
     const getUSDBalance = async () => {
         return balance.usd_balance;
+    }
+
+    const pushNewTransaction = async ({ to, from, type }) => {
+        try {
+            var transaction = {
+                id: v4(),
+                type: type,
+                amount: amount,
+                token: token,
+                date: new Date(),
+            }
+            await database().ref('transactions').push(transaction);
+            console.log('Transaction saved successfully');
+        } catch (error) {
+            console.error('Error saving transaction : ', error);
+            throw error;
+        }
     }
 
     const getTransactions = async () => {

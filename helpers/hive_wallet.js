@@ -21,7 +21,7 @@ async function updateTransactionInFirestore({ result, from_username, to_username
     }
 }
 
-export async function getAccountBalance({ username }) {
+export async function getAccountBalanceFromHive({ username }) {
     try {
         const account = await client.database.getAccounts([this.username]);
         const hiveBalance = parseFloat(account[0].balance.split(' ')[0]);
@@ -35,7 +35,7 @@ export async function getAccountBalance({ username }) {
     }
 }
 
-export async function getTransactions({ username }) {
+export async function getTransactionsFromHive({ username }) {
     try {
         const transactions = await getClient().database.getAccountHistory(username, -1, 100);
         return transactions;
@@ -47,7 +47,7 @@ export async function getTransactions({ username }) {
 
 export async function calculateAvgSpend({ username }) {
     try {
-        const transactions = await getTransactions(username)
+        const transactions = await getTransactionsFromHive(username)
         let totalSpend = 0;
         let count = 0;
         transactions.forEach(transaction => {

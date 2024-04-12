@@ -15,15 +15,18 @@ const SignUp = () => {
     // NOTE : username, password, is_premium
     const { createClaimedAccount, signInWithPhoneNumber } = useAuth();
 
-    const createAccount = (username, password, is_premium) => {
-        createClaimedAccount(username, password);
-        signInWithPhoneNumber(phoneNumber)
-        // TODO : Implement Signin
-        navigation.navigate('OTPScreen', { confirm });
+    const createAccount = (username, password) => {
+        setConfirm(signInWithPhoneNumber(phoneNumber));
+        const result = createClaimedAccount(username, password);
+        if (result.success) {
+            navigation.navigate('OTPScreen', { confirm });
+        }
+
     }
 
     return (
         <View>
+            <TextInput />
             <Button onPress={() => createClaimedAccount()} />
         </View>
     )
