@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "975572027150",
+    "firebase_url": "https://hivepay-c3366-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "hivepay-c3366",
+    "storage_bucket": "hivepay-c3366.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:975572027150:android:7e8c5772e27b8226df795f",
+        "android_client_info": {
+          "package_name": "com.pixels.hivepay"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsBT24DXI_nja8p0L3-tJi9odSLokCgUw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
