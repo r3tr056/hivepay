@@ -1,11 +1,19 @@
 
 import React from 'react';
 
-import LoginScreen from './src/screens/Login';
+import { StatusBar } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { RecoilRoot } from 'recoil';
+import Navigation from './src/navigation';
 
 function App(): React.JSX.Element {
   return (
-    <LoginScreen />
+    <RecoilRoot>
+      <SafeAreaProvider>
+        <Navigation />
+        <StatusBar />
+      </SafeAreaProvider>
+    </RecoilRoot>
   );
 }
 
